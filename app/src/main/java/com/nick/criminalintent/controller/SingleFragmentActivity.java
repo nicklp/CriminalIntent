@@ -5,13 +5,14 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v7.app.AppCompatActivity;
 
 import com.nick.criminalintent.R;
 
 /**
  * Created by Nick on 2016/8/30.
  */
-public abstract class SingleFragmentActivity extends FragmentActivity {
+public abstract class SingleFragmentActivity extends AppCompatActivity {
 
     /**
      * 此处为了通用，将不同的fragment抽象，返回其父类型

@@ -1,9 +1,12 @@
 package com.nick.criminalintent.controller;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -21,6 +24,8 @@ import com.nick.criminalintent.domain.Crime;
 import com.nick.criminalintent.domain.CrimeLab;
 import com.nick.criminalintent.tools.DebugTags;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 /**
@@ -30,17 +35,31 @@ public class CrimeFragment extends Fragment{
     private Crime mCrime;
     private EditText mTitleField;
     private Button mDateButton;
+    private Button mDateTimeButton;
     private CheckBox mSolvedCheckBox;
     private static final String ARG_CRIME_ID= "crime_id";
+    private static final String MOD_POSITION = "mod_position";
+    private static final String DIALOG_DATE = "DialogDate";
+    private static final String DIALOG_DATE_TIME = "DialogDateTime";
+    private int position = -1;
+    private static final int REQUEST_DATE = 0;
+    private static final int REQUEST_DATE_TIME = 1;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //UUID crimeId = (UUID) getActivity().getIntent().getSerializableExtra(CrimeActivity.EXTRA_CRIME_ID);
+        //position = getActivity().getIntent().getIntExtra(CrimeActivity.REQUEST_CODE_STR,0);
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
+        position = getArguments().getInt(MOD_POSITION);
+
         mCrime = CrimeLab.get(getActivity()).getCrime(crimeId);
-        Log.i(DebugTags.getInstance().getValueByKey(null),"onCreate(),title:"+mCrime.getTitle());
-        //Log.i(TAG,TAG+"->onCreate()");
+        returnResult();
+    }
+
+    public void returnResult(){
+        Intent intent = new Intent();
+        intent.putExtra(CrimeActivity.REQUEST_CODE_STR,position);
+        getActivity().setResult(Activity.RESULT_OK,intent);
     }
 
     /**
@@ -77,8 +96,36 @@ public class CrimeFragment extends Fragment{
         });
 
         mDateButton = (Button) v.findViewById(R.id.crime_date);
-        mDateButton.setText(DateFormat.format("yyyy-MM-dd h:mmaa/EEEE",mCrime.getDate()).toString());
-        mDateButton.setEnabled(false);
+        mDateButton.setText(formatDate(mCrime.getDate()));
+        //mDateButton.setEnabled(false);
+        mDateButton.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                //要讲DialogFragment添加给FragmentManager管理并放置到屏幕上，可调用show()方法，两种重载
+                FragmentManager manager = getFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+                dialog.setTargetFragment(CrimeFragment.this,REQUEST_DATE);//建立CrimeFragment和DatePickerFragment的联系
+                dialog.show(manager,DIALOG_DATE);
+            }
+        });
+
+        mDateTimeButton = (Button) v.findViewById(R.id.crime_dateTime);
+        Calendar time = Calendar.getInstance();
+        time.setTime(mCrime.getDate());
+        int hour = time.get(Calendar.HOUR);
+        int min = time.get(Calendar.MINUTE);
+        int ss = time.get(Calendar.SECOND);
+        mDateTimeButton.setText(hour+":"+min+":"+ss);
+        mDateTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                FragmentManager fragmentManager = getFragmentManager();
+                TimePickerFragment fragment = TimePickerFragment.newInstance(mCrime.getDate());
+                //fragment.setTargetFragment(CrimeFragment.this,REQUEST_DATE_TIME);
+                fragment.show(fragmentManager,DIALOG_DATE_TIME);
+            }
+        });
 
         mSolvedCheckBox = (CheckBox) v.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
@@ -91,59 +138,28 @@ public class CrimeFragment extends Fragment{
         return v;
     }
 
-    public static CrimeFragment newInstance(UUID crimeId){
+    public static CrimeFragment newInstance(UUID crimeId,int position){
         Bundle args = new Bundle();
         args.putSerializable(ARG_CRIME_ID,crimeId);
+        args.putInt(MOD_POSITION,position);
 
         CrimeFragment fragment = new CrimeFragment();
         fragment.setArguments(args);
         return fragment;
     }
 
-    /*
-    * activity的FragmentManager负责调用队里中fragment的生命周期方法。
-    * */
-
     @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        //Log.i(TAG,TAG+"->onAttach()");
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(resultCode != Activity.RESULT_OK) return;
+        if (requestCode == REQUEST_DATE){
+            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            mCrime.setDate(date);
+            mDateButton.setText(formatDate(mCrime.getDate()));
+        }
     }
 
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-        //Log.i(TAG,TAG+"->onActivityCreated()");
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        //Log.i(TAG,TAG+"->onStart()");
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-        //Log.i(TAG,TAG+"->onResume()");
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        //Log.i(TAG,TAG+"->onPause()");
-    }
-
-    @Override
-    public void onStop() {
-        super.onStop();
-        //Log.i(TAG,TAG+"->onStop()");
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        //Log.i(TAG,TAG+"->onDestroy()");
+    private String formatDate(Date date){
+        if(date == null) return "";
+        return DateFormat.format("yyyy-MM-dd h:mmaa/EEEE",mCrime.getDate()).toString();
     }
 }

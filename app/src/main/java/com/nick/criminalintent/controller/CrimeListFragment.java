@@ -26,6 +26,8 @@ public class CrimeListFragment extends Fragment {
 
     private RecyclerView mCrimeRecyclerView;
     private CrimeAdapter mAdapter;
+    private static final  int REQUEST_CRIME = 1;
+    private int position = -1 ;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -49,7 +51,11 @@ public class CrimeListFragment extends Fragment {
             mAdapter = new CrimeAdapter(crimes);
             mCrimeRecyclerView.setAdapter(mAdapter);
         }else{
-            mAdapter.notifyDataSetChanged();
+            if(position != -1){
+                mAdapter.notifyItemChanged(position);
+            }else{
+                mAdapter.notifyDataSetChanged();//强制更新mAdapter中的每一项。
+            }
         }
     }
 
@@ -79,9 +85,18 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View v) {
-            Log.i(DebugTags.getInstance().getValueByKey(null),"onClick,crimeId:"+mCrime.getTitle());
-            Intent intent = CrimeActivity.newIntent(getActivity(),mCrime.getId());
+            int position = super.getAdapterPosition();
+            //Intent intent = CrimeActivity.newIntent(getActivity(),mCrime.getId(),position);
+            Intent intent = CrimePagerActivity.newIntent(getActivity(),mCrime.getId());
             startActivity(intent);
+            //startActivityForResult(intent,REQUEST_CRIME);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == REQUEST_CRIME){
+            position = data.getIntExtra(CrimeActivity.REQUEST_CODE_STR,-1);
         }
     }
 

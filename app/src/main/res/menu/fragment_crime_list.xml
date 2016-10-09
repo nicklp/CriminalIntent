@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app = "http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_item_new_crime"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/new_crime"
+        app:showAsAction = "ifRoom|withText"/>
+        <!--showAsAction属性用于指定菜单选项是显示在工具栏上，还是隐藏于溢出菜单.该属性当前设置为ifRoom和withText的组合值,只要空间足够，菜单项图标及其文字描述都会显示在工具栏上。如空间仅够显示菜单项图标，文字描述就不会显示。如空间大小不够显示任何项，菜单项就会隐藏到溢出菜单中
+        showAsAction还有另外两个可选值：always和never。不推荐使用always，应尽量使用ifRoom属性值，让操作系统决定如何显示菜单项。对于那些很少用到的菜单项，never属性值是个不错的选择。总之，为避免混乱的用户界面，工具栏上只应放置常用菜单项
+        -->
+</menu>

@@ -8,10 +8,12 @@ import java.util.UUID;
 
 public class CrimeActivity extends SingleFragmentActivity {
     private static final String EXTRA_CRIME_ID="com.nick.criminalintent.crime_id";
+    public static final String REQUEST_CODE_STR = "request_code_str";
     @Override
     protected Fragment createFragment() {
         UUID crimeId = (UUID) getIntent().getSerializableExtra(EXTRA_CRIME_ID);
-        return new CrimeFragment().newInstance(crimeId);
+        int position = getIntent().getIntExtra(REQUEST_CODE_STR,-1);
+        return new CrimeFragment().newInstance(crimeId,position);
     }
 
     /**
@@ -20,9 +22,10 @@ public class CrimeActivity extends SingleFragmentActivity {
      * @param crimeId
      * @return
      */
-    public static Intent newIntent(Context packageContext, UUID crimeId){
+    public static Intent newIntent(Context packageContext, UUID crimeId,int position){
         Intent intent = new Intent(packageContext,CrimeActivity.class);
         intent.putExtra(EXTRA_CRIME_ID,crimeId);
+        intent.putExtra(REQUEST_CODE_STR,position);
         return intent;
     }
 
